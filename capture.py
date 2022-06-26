@@ -7,19 +7,24 @@ import numpy as np
 
 cap=cv.VideoCapture(0)
 facedetect=cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_default.xml')
-model=load_model('Signmodel.h5')
+model=load_model('G:\sign language projet\model.pkl')
+alphab = '0123456789ABCDEFGHI$KLMNOPQRSTUVWXYZ'
+mapping_letter = {}
+
+for i,l in enumerate(alphab):
+    mapping_letter[l] = i
+mapping_letter = {v:k for k,v in mapping_letter.items()}
 while cap.isOpened():
     sts,frame=cap.read()
-    #frame=cv.resize(frame,(224,224),3)
+    frame1=cv.resize(frame,(224,224))
+    frame1 = frame1.reshape(1,224,224,3)
     if sts:
-        print(sts)
+        #frame=cv.cvtColor(frame,cv.COLOR_BGR2GRAY)
         faces=facedetect.detectMultiScale(frame,1.3,5)
-        print(faces)
-        for x,y,w,h in faces:
-                y_pred=model.predict(frame)
-                print(model.predict(frame))
-                print(y_pred,"printing y_pred")
-                cv.putText(frame,y_pred,(x,y-30), cv.FONT_HERSHEY_COMPLEX, 0.75, (255,0,0),1, cv.LINE_AA)
+        y_pred=model.predict(frame1)
+        y1_pred = np.argmax(y_pred, axis=1)
+        y_test_letters = [mapping_letter[x] for x in y1_pred]
+        print(y_test_letters)
                     
     cv.imshow("SEMI",frame)
     if(cv.waitKey(5)==ord('q')):
